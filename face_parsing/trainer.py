@@ -63,6 +63,21 @@ class Trainer(object):
             self.load_pretrained_model()
 
     def train(self):
+        """
+        Trains the model using the provided data loader.
+        1. Initializes the data iterator and calculates steps per epoch.
+        2. Loads a pretrained model if available.
+        3. Iterates through the training steps, performing the following operations:
+            - Sets the model to training mode.
+            - Fetches the next batch of images and labels from the data loader.
+            - Processes the labels and converts them to one-hot encoding.
+            - Moves images and labels to the GPU.
+            - Trains the generator (G) by calculating the cross-entropy loss and performing backpropagation.
+            - Logs training progress and loss information.
+            - Generates and logs predicted labels and real labels to TensorBoard.
+            - Saves sample images at specified intervals.
+            - Saves the model checkpoint at specified intervals.
+        """
 
         # Data iterator
         data_iter = iter(self.data_loader)
@@ -91,7 +106,8 @@ class Trainer(object):
             labels_real_plain = labels[:, 0, :, :].cuda()
             labels = labels[:, 0, :, :].view(size[0], 1, size[2], size[3])
             oneHot_size = (size[0], 19, size[2], size[3])
-            labels_real = torch.cuda.FloatTensor(torch.Size(oneHot_size)).zero_()
+            labels_real = torch.zeros(torch.Size(oneHot_size)).cuda()
+            # labels_real = torch.cuda.FloatTensor(torch.Size(oneHot_size)).zero_()
             labels_real = labels_real.scatter_(1, labels.data.long().cuda(), 1.0)
 
             imgs = imgs.cuda()
@@ -114,10 +130,10 @@ class Trainer(object):
             label_batch_predict = generate_label(labels_predict, self.imsize)
             label_batch_real = generate_label(labels_real, self.imsize)
 
-            # scalr info on tensorboardX
+            # scalar info on tensorboardX
             writer.add_scalar('Loss/Cross_entrophy_loss', c_loss.data, step) 
 
-            # image infor on tensorboardX
+            # image info on tensorboardX
             img_combine = imgs[0]
             real_combine = label_batch_real[0]
             predict_combine = label_batch_predict[0]
