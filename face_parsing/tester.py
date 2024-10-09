@@ -94,21 +94,43 @@ class Tester(object):
         self.G.eval() 
         batch_num = int(self.test_size / self.batch_size)
 
-        for i in range(batch_num):
+        # Data iterator
+        data_iter = iter(self.data_loader)
+        step_per_epoch = len(self.data_loader)
+
+        # Start with trained model
+        if self.pretrained_model:
+            start = self.pretrained_model + 1
+        else:
+            start = 0
+
+        # Start time
+        for i in range(start, step_per_epoch):
+            try:
+                imgs, labels = next(data_iter)
+            except:
+                data_iter = iter(self.data_loader)
+                imgs, labels = next(data_iter)
+
             print (i)
-            imgs = []
-            for j in range(self.batch_size):
-                path = test_paths[i * self.batch_size + j]
-                img = transform(Image.open(path))
-                imgs.append(img)
-            imgs = torch.stack(imgs) 
+            # imgs = []
+            # for j in range(self.batch_size):
+            #     path = test_paths[i * self.batch_size + j]
+            #     img = transform(Image.open(path))
+            #     imgs.append(img)
+            # imgs = torch.stack(imgs) 
             imgs = imgs.cuda()
+
             labels_predict = self.G(imgs)
-            labels_predict_plain = generate_label_plain(labels_predict)
-            labels_predict_color = generate_label(labels_predict)
+            labels_predict_plain = generate_label_plain(labels_predict, self.imsize)
+            labels_predict_color = generate_label(labels_predict, self.imsize)
             for k in range(self.batch_size):
-                cv2.imwrite(os.path.join(self.test_label_path, str(i * self.batch_size + k) +'.png'), labels_predict_plain[k])
+                # print(type(labels_predict_plain[k]))
+                # print(labels_predict_plain[k].shape)
+                # print(labels_predict_plain[k])
+                # print(labels_predict_color[k])
                 save_image(labels_predict_color[k], os.path.join(self.test_color_label_path, str(i * self.batch_size + k) +'.png'))
+                # cv2.imwrite(os.path.join(self.test_label_path, str(i * self.batch_size + k) +'.png'), labels_predict_plain[k].astype(np.uint8))
 
     def build_model(self):
         self.G = unet().cuda()

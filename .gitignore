@@ -163,5 +163,4 @@ cython_debug/
 
 .vscode/
 runs
-/face_parsing/train
-/face_parsing/val
+/face_parsing/Datasets

@@ -21,6 +21,8 @@ def main(config):
         trainer = Trainer(data_loader.loader(), config)
         trainer.train()
     else:
+        data_loader = Data_Loader(config.img_path, config.label_path, config.imsize,
+                             config.batch_size, config.train)
         tester = Tester(config)
         tester.test()
 

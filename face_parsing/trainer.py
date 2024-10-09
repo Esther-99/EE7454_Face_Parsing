@@ -137,7 +137,7 @@ class Trainer(object):
             img_combine = imgs[0]
             real_combine = label_batch_real[0]
             predict_combine = label_batch_predict[0]
-            for i in range(1, self.batch_size):
+            for i in range(1, min(len(imgs),self.batch_size)):
                 img_combine = torch.cat([img_combine, imgs[i]], 2)
                 real_combine = torch.cat([real_combine, label_batch_real[i]], 2)
                 predict_combine = torch.cat([predict_combine, label_batch_predict[i]], 2)
@@ -148,8 +148,8 @@ class Trainer(object):
             # Sample images
             if (step + 1) % self.sample_step == 0:
                 labels_sample = self.G(imgs)
-                labels_sample = generate_label(labels_sample)
-                labels_sample = torch.from_numpy(labels_sample)
+                labels_sample = generate_label(labels_sample, self.imsize)
+                # labels_sample = torch.from_numpy(labels_sample)
                 save_image(denorm(labels_sample.data),
                            os.path.join(self.sample_path, '{}_predict.png'.format(step + 1)))
 
